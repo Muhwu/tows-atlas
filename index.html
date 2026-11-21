@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>tows Systems Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a long indigo scroll; each system is a "plate" with one diagram, one line of how, one line of where. */
+:root{
+  --bg:#F2EDE2; --panel:#FBF8F1; --ink:#18202F; --muted:#5A6476; --line:#D9D1C1;
+  --gold:#94701C; --steel:#2C5C88; --lock:#B0372B; --ok:#2E7F55; --chip:#ECE4D3;
+  --display:"Shippori Mincho B1","Hiragino Mincho ProN","Times New Roman",serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1320; --panel:#141C2B; --ink:#E9E3D5; --muted:#8E98AA; --line:#263247;
+  --gold:#D8AE4E; --steel:#7EA8CF; --lock:#E0634F; --ok:#6CC491; --chip:#1B2638; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1320; --panel:#141C2B; --ink:#E9E3D5; --muted:#8E98AA; --line:#263247;
+  --gold:#D8AE4E; --steel:#7EA8CF; --lock:#E0634F; --ok:#6CC491; --chip:#1B2638; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.6 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1080px;margin:0 auto;padding-block:28px 72px;display:grid;gap:56px}
+h1,h2,h3{font-family:var(--display);font-weight:800;text-wrap:balance;margin:0;letter-spacing:.01em}
+h2{font-size:clamp(26px,3.4vw,36px);line-height:1.15}
+h3{font-size:18px}
+p{margin:0}
+.eyebrow{font:600 11px/1 var(--mono);letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.muted{color:var(--muted)}
+code,.mono{font-family:var(--mono);font-size:.86em}
+.mono{font-variant-numeric:tabular-nums}
+
+/* hero */
+.hero{position:relative;display:grid;gap:18px;padding-block:24px 8px;overflow:hidden}
+.hero h1{font-size:clamp(46px,9vw,104px);line-height:.95}
+.hero h1 span{color:var(--gold)}
+.hero .lede{max-width:60ch;font-size:17px;color:var(--muted)}
+.slash{position:absolute;right:-40px;top:-10px;width:min(620px,80%);height:auto;pointer-events:none;opacity:.9}
+.slash path{fill:none;stroke:url(#edge);stroke-width:5;stroke-linecap:round;stroke-dasharray:900;stroke-dashoffset:900;animation:cut 1.1s .25s cubic-bezier(.7,0,.2,1) forwards}
+.slash .glint{stroke:var(--ink);stroke-width:1;opacity:.35;animation-delay:.4s}
+@keyframes cut{to{stroke-dashoffset:0}}
+.stats{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:6px}
+.stat{display:grid;gap:2px}
+.stat b{font:800 30px/1 var(--display);font-variant-numeric:tabular-nums}
+.stat small{font:500 11px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+/* plates */
+.plate{display:grid;gap:18px}
+.plate header{display:grid;gap:8px}
+.how{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px}
+.how dt{font:600 11px/1.9 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.how dd{margin:0;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:18px;min-width:0}
+
+/* flow diagrams */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px 0}
+.node{background:var(--chip);border:1px solid var(--line);border-radius:4px;padding:8px 12px;display:grid;gap:2px;min-width:0}
+.node b{font:600 13px/1.25 var(--body)}
+.node i{font:400 11.5px/1.3 var(--mono);font-style:normal;color:var(--muted)}
+.node.key{border-color:var(--gold);box-shadow:inset 3px 0 0 var(--gold)}
+.arrow{align-self:center;width:26px;height:12px;flex:none;position:relative}
+.arrow::before{content:"";position:absolute;left:3px;right:6px;top:5.5px;height:1px;background:var(--muted)}
+.arrow::after{content:"";position:absolute;right:3px;top:2px;border:4px solid transparent;border-left:6px solid var(--muted);border-right:0;height:0}
+.branch{display:grid;gap:6px}
+.branch .node{padding:6px 10px}
+
+/* keys */
+.keys{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.k{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:5px;background:var(--panel)}
+kbd{font:600 12px/1 var(--mono);min-width:34px;padding:7px 8px;text-align:center;border-radius:4px;background:var(--chip);border:1px solid var(--line);border-bottom-width:3px;color:var(--ink);white-space:nowrap}
+.k span{font-size:13px}
+.k.new kbd{border-color:var(--gold)}
+
+/* timeline */
+.tl{display:grid;gap:14px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font:600 12px/1 var(--mono);letter-spacing:.04em;padding:9px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.tab[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tab:focus-visible,.dir:focus-visible,.toggle:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.track{position:relative;height:64px;border-radius:5px;overflow:hidden;background:var(--chip);border:1px solid var(--line);cursor:ew-resize;touch-action:none}
+.seg{position:absolute;top:0;bottom:0;display:flex;align-items:flex-end;padding:0 8px 7px;font:600 10.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;overflow:hidden}
+.seg.wind,.seg.rec{color:var(--ok);background:repeating-linear-gradient(135deg,transparent 0 7px,color-mix(in srgb,var(--ok) 14%,transparent) 7px 8px)}
+.seg.lock{color:var(--lock);background:color-mix(in srgb,var(--lock) 16%,transparent);border-left:1px solid var(--lock);border-right:1px solid var(--lock)}
+.hitw{position:absolute;top:8px;height:10px;background:var(--lock);border-radius:2px;opacity:.85}
+.head{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--gold);box-shadow:0 0 12px var(--gold);left:0}
+.scale{display:flex;justify-content:space-between;font:400 11px/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.readout{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:center}
+.phase{font:800 22px/1 var(--display)}
+.acts{display:flex;flex-wrap:wrap;gap:8px}
+.act{font:600 12px/1 var(--mono);padding:7px 10px;border-radius:4px;border:1px solid var(--line)}
+.act.yes{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 50%,var(--line))}
+.act.buf{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 50%,var(--line))}
+.act.no{color:var(--lock);border-color:color-mix(in srgb,var(--lock) 50%,var(--line));text-decoration:line-through}
+.tlctl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* compass */
+.compass{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:24px;align-items:center}
+.compass svg{width:100%;height:auto;max-width:300px}
+.dir{cursor:pointer}
+.dir line{stroke:var(--muted);stroke-width:2}
+.dir polygon{fill:var(--muted)}
+.dir.on line{stroke:var(--gold);stroke-width:3}
+.dir.on polygon{fill:var(--gold)}
+.dir.off{opacity:.18}
+.toggle{font:600 12px/1 var(--mono);padding:9px 12px;border-radius:999px;border:1px solid var(--gold);background:transparent;color:var(--gold);cursor:pointer}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:7px 10px 7px 0;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 10.5px/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+
+/* guard bars */
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:110px 1fr 70px;gap:10px;align-items:center;font-size:13px}
+.bar .t{height:10px;border-radius:5px;background:var(--chip);border:1px solid var(--line);overflow:hidden}
+.bar .t i{display:block;height:100%;background:var(--steel)}
+
+/* roster */
+.roster{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.who{border:1px solid var(--line);border-radius:6px;padding:14px;background:var(--panel);display:grid;gap:6px;align-content:start}
+.who .tag{justify-self:start;font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:5px 7px;border-radius:3px;background:var(--chip);color:var(--muted)}
+.who.focus .tag{background:var(--gold);color:var(--bg)}
+.who h3{font-size:22px}
+.who p{font-size:13px;color:var(--muted)}
+
+/* state machine */
+.sm{width:100%;height:auto}
+.sm rect{fill:var(--chip);stroke:var(--line)}
+.sm .hot rect{stroke:var(--gold)}
+.sm text{fill:var(--ink);font:600 13px var(--body)}
+.sm .sub{fill:var(--muted);font:400 10.5px var(--mono)}
+.sm path{fill:none;stroke:var(--muted);stroke-width:1.3}
+.sm .new path,.sm .new rect{stroke:var(--gold);stroke-dasharray:4 3}
+.sm .arrowhead{fill:var(--muted)}
+
+/* now */
+.now{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.st{border-left:3px solid var(--line);padding:4px 0 4px 14px;display:grid;gap:4px}
+.st.run{border-color:var(--gold)} .st.wait{border-color:var(--steel)} .st.you{border-color:var(--lock)}
+.st b{font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase}
+.st.run b{color:var(--gold)} .st.wait b{color:var(--steel)} .st.you b{color:var(--lock)}
+.st p{font-size:13.5px}
+footer{font:400 12px/1.6 var(--mono);color:var(--muted);border-top:1px solid var(--line);padding-top:16px}
+
+@media (max-width:640px){
+  .compass{grid-template-columns:1fr}
+  .compass svg{margin:0 auto}
+  .bar{grid-template-columns:86px 1fr 56px}
+  .slash{opacity:.35}
+}
+@media (prefers-reduced-motion:reduce){
+  .slash path{animation:none;stroke-dashoffset:0}
+}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+<section class="hero">
+  <svg class="slash" viewBox="0 0 620 260" aria-hidden="true">
+    <defs><linearGradient id="edge" x1="0" x2="1"><stop offset="0" stop-color="var(--gold)" stop-opacity="0"/><stop offset=".35" stop-color="var(--gold)"/><stop offset="1" stop-color="var(--steel)"/></linearGradient></defs>
+    <path d="M20 230 C 180 200, 360 120, 600 18"/>
+    <path class="glint" d="M60 236 C 210 206, 380 128, 604 30"/>
+  </svg>
+  <p class="eyebrow">Unreal Engine 5.8 · anime souls-like · as of 21 Nov 2026</p>
+  <h1>What <span>tows</span><br>plays today</h1>
+  <p class="lede">Every system that runs in the build right now, each with one diagram and a line on how it's built. Hover or drag the diagrams.</p>
+  <div class="stats">
+    <div class="stat"><b>321</b><small>automated tests</small></div>
+    <div class="stat"><b>3</b><small>weapons · 2 types</small></div>
+    <div class="stat"><b>5</b><small>bodies · 2 focus</small></div>
+    <div class="stat"><b>3</b><small>enemy kinds</small></div>
+    <div class="stat"><b>6</b><small>player abilities</small></div>
+  </div>
+</section>
+
+<section class="plate" aria-labelledby="h-controls">
+  <header><p class="eyebrow">Controls</p><h2 id="h-controls">In your hands</h2></header>
+  <div class="keys">
+    <div class="k"><kbd>WASD</kbd><span>Move</span></div>
+    <div class="k"><kbd>LMB</kbd><span>Light combo ×4</span></div>
+    <div class="k"><kbd>⇧+LMB</kbd><span>Heavy</span></div>
+    <div class="k"><kbd>RMB</kbd><span>Guard · parry</span></div>
+    <div class="k new"><kbd>Space</kbd><span>Dodge / roll</span></div>
+    <div class="k new"><kbd>L-Alt</kbd><span>Jump</span></div>
+    <div class="k"><kbd>Q</kbd><span>Lock on</span></div>
+    <div class="k"><kbd>E</kbd><span>Interact · rest</span></div>
+    <div class="k"><kbd>R</kbd><span>Use item (flask)</span></div>
+    <div class="k"><kbd>Esc</kbd><span>Menu · equipment</span></div>
+    <div class="k"><kbd>1–5</kbd><span>Swap body (dev)</span></div>
+    <div class="k"><kbd>C</kbd><span>Debug camera (dev)</span></div>
+    <div class="k"><kbd>F6</kbd><span>Debug panel (dev)</span></div>
+    <div class="k"><kbd>'</kbd><span>Hit traces (dev)</span></div>
+  </div>
+  <p class="muted" style="font-size:13px">Gold keys changed this week. Gamepad: B dodges, A jumps.</p>
+</section>
+
+<section class="plate" aria-labelledby="h-loop">
+  <header><p class="eyebrow">Combat core</p><h2 id="h-loop">From button to hit</h2></header>
+  <div class="panel scroll">
+    <div class="flow">
+      <div class="node"><b>Input</b><i>Enhanced Input tag</i></div><div class="arrow"></div>
+      <div class="node"><b>Buffer</b><i>0.25 s, replays on unlock</i></div><div class="arrow"></div>
+      <div class="node key"><b>Ability</b><i>GAS · Attack Guard Dodge<br>UseItem Reaction Stagger</i></div><div class="arrow"></div>
+      <div class="node"><b>Montage</b><i>root motion · state tags</i></div><div class="arrow"></div>
+      <div class="node"><b>Tracer</b><i>MissNoHit capsule<br>Trace_Base→Tip · 10 cm steps</i></div><div class="arrow"></div>
+      <div class="branch">
+        <div class="node"><b>Invulnerable?</b><i>dodge i-frames → miss</i></div>
+        <div class="node"><b>Guarded?</b><i>parry window 0.2 s</i></div>
+        <div class="node"><b>Damage</b><i>health · stamina</i></div>
+      </div><div class="arrow"></div>
+      <div class="node key"><b>Reaction</b><i>Chooser picks flinch,<br>stagger, guard break, death</i></div>
+    </div>
+  </div>
+  <dl class="how">
+    <dt>How</dt><dd>Gameplay Ability System; movesets and stats are data assets; hit reactions come from a Chooser table <code>CHT_HitReact_Humanoid</code>.</dd>
+    <dt>Rule</dt><dd>One stamina rule for attacks and dodges: any stamina left lets you act, and the cost scales by weapon type.</dd>
+  </dl>
+</section>
+
+<section class="plate" aria-labelledby="h-tl">
+  <header><p class="eyebrow">Cancel windows · new</p><h2 id="h-tl">Locked only while the blade moves</h2></header>
+  <div class="panel tl">
+    <div class="tlctl">
+      <div class="tabs" role="group" aria-label="Attack">
+        <button class="tab" id="atk0" aria-pressed="true">Nodachi · Light 1</button>
+        <button class="tab" id="atk1" aria-pressed="false">Nodachi · Heavy 1</button>
+        <button class="tab" id="atk2" aria-pressed="false">Greatsword · Heavy 1</button>
+      </div>
+      <button class="toggle" id="play" aria-pressed="true">Pause</button>
+    </div>
+    <div class="track" id="track" role="slider" aria-label="Attack time" tabindex="0" aria-valuemin="0">
+      <div class="seg wind" id="sWind">windup</div>
+      <div class="seg lock" id="sLock">swing · locked</div>
+      <div class="seg rec" id="sRec">recovery</div>
+      <div class="hitw" id="hit"></div>
+      <div class="head" id="headm"></div>
+    </div>
+    <div class="scale"><span>0 s</span><span id="tNow" class="mono">0.00 s</span><span id="tEnd">1.58 s</span></div>
+    <div class="readout">
+      <div class="phase" id="phase">Windup</div>
+      <div class="acts" id="acts"></div>
+    </div>
+  </div>
+  <dl class="how">
+    <dt>How</dt><dd>Nothing is hand-authored. <code>TowsAttackPhases</code> reads each montage's hit windows and adds 0.05 s of grace on each side. The lock is a live query of the montage position, so hit stop needs no special case.</dd>
+    <dt>Buffer</dt><dd>A dodge or guard pressed in the swing plays the moment the lock ends. A jump pressed in the swing is dropped. A cancelled attack keeps the stamina it spent.</dd>
+  </dl>
+</section>
+
+<section class="plate" aria-labelledby="h-dodge">
+  <header><p class="eyebrow">Dodge · new</p><h2 id="h-dodge">Dash when locked on, roll when free</h2></header>
+  <div class="panel compass">
+    <svg viewBox="-150 -150 300 300" id="comp" role="img" aria-label="Dodge directions">
+      <circle r="118" fill="none" stroke="var(--line)" stroke-dasharray="2 5"/>
+      <circle r="58" fill="none" stroke="var(--line)"/>
+      <g id="dirs"></g>
+      <g id="target"><circle cy="-140" r="0" fill="var(--lock)"/></g>
+      <circle r="13" fill="var(--ink)"/>
+      <text y="4" text-anchor="middle" font-family="var(--mono)" font-size="9" fill="var(--bg)" font-weight="600">YOU</text>
+    </svg>
+    <div style="display:grid;gap:14px;min-width:0">
+      <div class="tlctl"><button class="toggle" id="mode" aria-pressed="true">Locked on</button><span class="muted mono" id="modeNote" style="font-size:12px"></span></div>
+      <div class="scroll"><table>
+        <thead><tr><th>Move</th><th>Travel</th><th>I-frames</th><th>Act again</th></tr></thead>
+        <tbody>
+          <tr><td>Nodachi dash ×8</td><td class="n">6.35 m</td><td class="n">0.05–0.50 s</td><td class="n">1.22 s</td></tr>
+          <tr><td>Nodachi roll</td><td class="n">4.3 m</td><td class="n">0.05–0.45 s</td><td class="n">0.97 s</td></tr>
+          <tr><td>Greatsword step ×4</td><td class="n">2 m</td><td class="n">0.03–0.30 s</td><td class="n">0.42 s</td></tr>
+          <tr><td>Greatsword roll</td><td class="n">5–6 m</td><td class="n">0.03–0.40 s</td><td class="n">0.65 s</td></tr>
+        </tbody>
+      </table></div>
+      <p class="muted" style="font-size:13px">Costs 20 stamina × the weapon multiplier (24 with the nodachi). Cancels a raised guard. Unarmed borrows the nodachi set.</p>
+    </div>
+  </div>
+</section>
+
+<section class="plate" aria-labelledby="h-weap">
+  <header><p class="eyebrow">Weapons</p><h2 id="h-weap">A type carries the feel, a weapon carries the look</h2></header>
+  <div class="grid2">
+    <div class="panel">
+      <div class="flow" style="gap:10px 0">
+        <div class="node key"><b>DA_WeaponType</b><i>moveset · anim layer · guard ability<br>dodge set · socket · tracer<br>stamina × · guard speed ×</i></div>
+        <div class="arrow"></div>
+        <div class="branch">
+          <div class="node"><b>Nodachi</b><i>Nodachi · start weapon</i></div>
+          <div class="node"><b>Greatsword</b><i>Greatsword · Black Flame Katana</i></div>
+        </div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="node" style="justify-self:start"><b>DA_Weapon</b><i>mesh · grip offset · stats · special moves · gem sockets</i></div>
+    </div>
+    <div class="panel" style="display:grid;gap:14px">
+      <h3>Walking speed while guarding</h3>
+      <div class="bars">
+        <div class="bar"><span>Greatsword</span><span class="t"><i style="width:40%"></i></span><span class="mono">200 cm/s</span></div>
+        <div class="bar"><span>Nodachi</span><span class="t"><i style="width:50%"></i></span><span class="mono">250 cm/s</span></div>
+        <div class="bar"><span>No weapon</span><span class="t"><i style="width:60%"></i></span><span class="mono">300 cm/s</span></div>
+      </div>
+      <p class="muted" style="font-size:13px">Full speed is 500 cm/s. The movement component scales speed while the guard tag is held, so speed comes back the instant the guard drops, however it drops.</p>
+    </div>
+  </div>
+  <dl class="how">
+    <dt>Anim</dt><dd>The type links a weapon anim layer, <code>ALI_WeaponLayer</code>, into the body's graph, which supplies idle, locomotion and guard poses. 43 nodachi clips come from 9CG's pack, using the mannequin skeleton with no retarget.</dd>
+  </dl>
+</section>
+
+<section class="plate" aria-labelledby="h-ai">
+  <header><p class="eyebrow">Enemies</p><h2 id="h-ai">One StateTree, tuned per profile</h2></header>
+  <div class="panel scroll">
+    <svg class="sm" viewBox="0 0 900 230" role="img" aria-label="Enemy state machine" style="min-width:640px">
+      <defs><marker id="ah" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L8 4L0 8z" class="arrowhead"/></marker></defs>
+      <g><rect x="10" y="85" width="110" height="56" rx="4"/><text x="24" y="109">Idle</text><text class="sub" x="24" y="127">post / patrol</text></g>
+      <g><rect x="170" y="85" width="130" height="56" rx="4"/><text x="184" y="109">Perceive</text><text class="sub" x="184" y="127">sight + damage</text></g>
+      <g><rect x="350" y="85" width="130" height="56" rx="4"/><text x="364" y="109">Chase</text><text class="sub" x="364" y="127">navmesh · accel</text></g>
+      <g class="hot"><rect x="540" y="20" width="150" height="56" rx="4"/><text x="554" y="44">Attack</text><text class="sub" x="554" y="62">moveset by range</text></g>
+      <g><rect x="540" y="150" width="150" height="56" rx="4"/><text x="554" y="174">Space</text><text class="sub" x="554" y="192">strafe · guard</text></g>
+      <g><rect x="750" y="85" width="140" height="56" rx="4"/><text x="764" y="109">Leash home</text><text class="sub" x="764" y="127">re-aggro ≤ 500 cm</text></g>
+      <g class="new"><rect x="750" y="10" width="140" height="44" rx="4" fill="none"/><text x="764" y="37" style="fill:var(--gold)">Dodge · new</text></g>
+      <path d="M120 113H168" marker-end="url(#ah)"/>
+      <path d="M300 113H348" marker-end="url(#ah)"/>
+      <path d="M480 105 C510 90 515 55 538 50" marker-end="url(#ah)"/>
+      <path d="M615 78V148" marker-end="url(#ah)"/>
+      <path d="M625 148V80" marker-end="url(#ah)"/>
+      <path d="M690 178 C730 178 760 160 790 143" marker-end="url(#ah)"/>
+      <g class="new"><path d="M690 40H748" marker-end="url(#ah)"/></g>
+    </svg>
+  </div>
+  <div class="roster">
+    <div class="who"><span class="tag">Ronin</span><h3>Aprieto</h3><p>Katana. Heavy, 3-hit combo, 5 m lunge, quick punish. Dodges about 1 swing in 3.</p></div>
+    <div class="who"><span class="tag">Sentinel</span><h3>Quena</h3><p>Greatsword. Delayed swing, 7 m lunge, a guard-breaking slam. Prefers guard; rarely dodges.</p></div>
+    <div class="who"><span class="tag">Dummy ×3</span><h3>Training</h3><p>Unkillable. Flinches by hit direction; never dodges.</p></div>
+  </div>
+  <dl class="how">
+    <dt>How</dt><dd><code>ST_Melee</code> is built headless by <code>UTowsStateTreeTools</code>. Behavior profiles are data. Health bars show on screen when an enemy is hurt or locked on.</dd>
+  </dl>
+</section>
+
+<section class="plate" aria-labelledby="h-items">
+  <header><p class="eyebrow">Items · saves · checkpoints</p><h2 id="h-items">What you carry survives</h2></header>
+  <div class="panel scroll">
+    <div class="flow">
+      <div class="node"><b>Pickup</b><i>ATowsItemDrop · E</i></div><div class="arrow"></div>
+      <div class="node"><b>Inventory</b><i>item instances</i></div><div class="arrow"></div>
+      <div class="node"><b>Equipment</b><i>by category · Esc</i></div><div class="arrow"></div>
+      <div class="node key"><b>Save</b><i>inventory + equipped only</i></div><div class="arrow"></div>
+      <div class="branch">
+        <div class="node"><b>Game.sav</b><i>slot A · CRC header</i></div>
+        <div class="node"><b>Game_B.sav</b><i>slot B · newer wins</i></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid2">
+    <dl class="how">
+      <dt>Rest</dt><dd>A checkpoint sets your respawn point and refills the flask. On death you respawn there, flask refilled.</dd>
+      <dt>World</dt><dd>Persistent IDs remember picked-up and dropped items between sessions.</dd>
+    </dl>
+    <dl class="how">
+      <dt>Start</dt><dd>A new save starts with the nodachi wielded and all three weapons in the inventory. An existing save is never topped up.</dd>
+      <dt>Reset</dt><dd><code>tows.Save.Reset</code> works with or without PIE running.</dd>
+    </dl>
+  </div>
+</section>
+
+<section class="plate" aria-labelledby="h-bodies">
+  <header><p class="eyebrow">Characters</p><h2 id="h-bodies">Generated, normalized, simulated</h2></header>
+  <div class="panel scroll">
+    <div class="flow">
+      <div class="node"><b>Tripo</b><i>image → rigged mesh</i></div><div class="arrow"></div>
+      <div class="node"><b>Cinderwright</b><i>Blender: segment, garment<br>slots, weights, hair chains</i></div><div class="arrow"></div>
+      <div class="node"><b>Import</b><i>one Unreal writer at a time</i></div><div class="arrow"></div>
+      <div class="node key"><b>tows tooling</b><i>NormalizeBody · retarget · arms 8°<br>Chaos cloth · Kawaii hair · Celes</i></div><div class="arrow"></div>
+      <div class="node"><b>Play</b><i>mannequin anims on any body</i></div>
+    </div>
+  </div>
+  <div class="roster">
+    <div class="who focus"><span class="tag">Key 1 · player</span><h3>Araku</h3><p>Default body. 9 garments, 6 cloth sims, 8 hair chains with face locks.</p></div>
+    <div class="who focus"><span class="tag">Key 2 · Ronin</span><h3>Aprieto</h3><p>Stoles, cape, skirt, book on a rope. No hair chains.</p></div>
+    <div class="who"><span class="tag">Keys 3–5 · test</span><h3>Raku · Piel · Quena</h3><p>Earlier style tests. Kept working, no new work planned.</p></div>
+  </div>
+  <dl class="how">
+    <dt>Guard</dt><dd>A ratchet test fails if garment crossings get worse. Wind (<code>ATowsWind</code>) has lulls and drift; hair takes it at a response of 3.</dd>
+  </dl>
+</section>
+
+<section class="plate" aria-labelledby="h-now">
+  <header><p class="eyebrow">In motion</p><h2 id="h-now">What's moving right now</h2></header>
+  <div class="now">
+    <div class="st run"><b>Just landed</b><p>Enemies dodge your swings and have attacks of their own: lunges, a combo, a delayed swing and punishes, picked by range.</p></div>
+    <div class="st wait"><b>Waiting on Cinderwright</b><p>Araku split for customization, path A: head and hair as parts, plus one full garb per outfit.</p></div>
+    <div class="st you"><b>Waiting on you</b><p>PIE pass on the nodachi, dodge, cancel windows, guard speed and Araku as the player.</p></div>
+  </div>
+</section>
+
+<footer>tows · main after #262 · 321 tests green · built by Claude Code agents with advisor reviews on every PR</footer>
+</div>
+
+<script>
+(function(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- attack timeline ---------- */
+  const A = [
+    {end:1.58, lockS:0.25, lockE:0.55, hit:[0.30,0.50]},
+    {end:2.17, lockS:0.22, lockE:0.58, hit:[0.27,0.53]},
+    {end:3.42, lockS:0.74, lockE:1.18, hit:[0.79,1.13]}
+  ];
+  let cur = 0, t = 0.1, playing = !reduce, last = null;
+  const $ = id => document.getElementById(id);
+  const track=$('track'), head=$('headm');
+  const pct = (v,a)=> (v/a.end*100)+'%';
+  function layout(){
+    const a=A[cur];
+    $('sWind').style.cssText=`left:0;width:${pct(a.lockS,a)}`;
+    $('sLock').style.cssText=`left:${pct(a.lockS,a)};width:${pct(a.lockE-a.lockS,a)}`;
+    $('sRec').style.cssText=`left:${pct(a.lockE,a)};right:0`;
+    $('hit').style.cssText=`left:${pct(a.hit[0],a)};width:${pct(a.hit[1]-a.hit[0],a)}`;
+    $('tEnd').textContent=a.end.toFixed(2)+' s';
+    track.setAttribute('aria-valuemax',a.end);
+  }
+  function render(){
+    const a=A[cur];
+    head.style.left = pct(t,a);
+    $('tNow').textContent = t.toFixed(2)+' s';
+    track.setAttribute('aria-valuenow',t.toFixed(2));
+    let phase, acts;
+    if (t < a.lockS){ phase='Windup';
+      acts=[['Dodge','yes'],['Guard','yes'],['Jump','yes'],['Next light','no']]; }
+    else if (t < a.lockE){ phase = (t>=a.hit[0]&&t<=a.hit[1]) ? 'Swing · hitting' : 'Swing · locked';
+      acts=[['Dodge → buffered','buf'],['Guard → buffered','buf'],['Jump','no'],['Next light → buffered','buf']]; }
+    else { phase='Recovery';
+      acts=[['Dodge','yes'],['Guard','yes'],['Jump','yes'],['Next light','yes']]; }
+    const ph=$('phase'); ph.textContent=phase;
+    ph.style.color = phase.startsWith('Swing') ? 'var(--lock)' : 'var(--ok)';
+    $('acts').innerHTML = acts.map(([n,c])=>`<span class="act ${c}">${n}</span>`).join('');
+  }
+  function tick(ts){
+    if (last!==null && playing){ t += (ts-last)/1000*0.6; if (t>A[cur].end) t=0; render(); }
+    last=ts; requestAnimationFrame(tick);
+  }
+  [0,1,2].forEach(i=>$('atk'+i).addEventListener('click',()=>{
+    cur=i; t=Math.min(t,A[i].end);
+    [0,1,2].forEach(j=>$('atk'+j).setAttribute('aria-pressed', j===i));
+    layout(); render();
+  }));
+  const playBtn=$('play');
+  function setPlay(p){ playing=p; playBtn.textContent=p?'Pause':'Play'; playBtn.setAttribute('aria-pressed',p); }
+  playBtn.addEventListener('click',()=>setPlay(!playing));
+  function scrub(e){
+    const r=track.getBoundingClientRect();
+    t=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width))*A[cur].end; render();
+  }
+  track.addEventListener('pointerdown',e=>{ setPlay(false); track.setPointerCapture(e.pointerId); scrub(e);
+    const mv=ev=>scrub(ev), up=()=>{track.removeEventListener('pointermove',mv);track.removeEventListener('pointerup',up);};
+    track.addEventListener('pointermove',mv); track.addEventListener('pointerup',up); });
+  track.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='ArrowLeft'){ setPlay(false); t=Math.max(0,Math.min(A[cur].end,t+(e.key==='ArrowRight'?0.05:-0.05))); render(); e.preventDefault(); }
+  });
+  if (reduce){ t=0.4; setPlay(false); }
+  layout(); render(); requestAnimationFrame(tick);
+
+  /* ---------- dodge compass ---------- */
+  const names=['Forward','Fwd-right','Right','Back-right','Back','Back-left','Left','Fwd-left'];
+  const g=$('dirs'); let locked=true;
+  names.forEach((n,i)=>{
+    const ang=(i*45-90)*Math.PI/180, x=Math.cos(ang), y=Math.sin(ang);
+    const x1=x*20,y1=y*20,x2=x*104,y2=y*104;
+    const px=-y, py=x;
+    const tip=`${x*116},${y*116} ${x2+px*7},${y2+py*7} ${x2-px*7},${y2-py*7}`;
+    const el=document.createElementNS('http://www.w3.org/2000/svg','g');
+    el.setAttribute('class','dir'); el.setAttribute('tabindex','0'); el.dataset.i=i;
+    el.setAttribute('role','button'); el.setAttribute('aria-label',n);
+    el.innerHTML=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><polygon points="${tip}"/><title>${n}</title>`;
+    g.appendChild(el);
+  });
+  const dirs=[...g.children];
+  function paint(sel){
+    dirs.forEach((d,i)=>{
+      d.classList.remove('on','off');
+      if(!locked && i!==0) d.classList.add('off');
+      if(sel===i) d.classList.add('on');
+    });
+    const tgt=$('target').firstElementChild;
+    tgt.setAttribute('r', locked?7:0);
+    $('modeNote').textContent = locked
+      ? (sel==null?'8 directions, relative to the target · no input dashes back':`${names[sel]} dash · still facing the target`)
+      : 'turns to your input, then rolls · no input rolls forward';
+  }
+  dirs.forEach(d=>{
+    const i=+d.dataset.i;
+    d.addEventListener('mouseenter',()=>paint(locked?i:0));
+    d.addEventListener('focus',()=>paint(locked?i:0));
+    d.addEventListener('mouseleave',()=>paint(locked?null:0));
+  });
+  $('mode').addEventListener('click',()=>{
+    locked=!locked; const b=$('mode');
+    b.textContent=locked?'Locked on':'Free (not locked)'; b.setAttribute('aria-pressed',locked);
+    paint(locked?null:0);
+  });
+  paint(null);
+})();
+</script>
+</body>
+</html>
